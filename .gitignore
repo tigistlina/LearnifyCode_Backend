@@ -129,6 +129,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+firebase_credentials/learnifycode_firebase_credentials.json
 
 # Spyder project settings
 .spyderproject
