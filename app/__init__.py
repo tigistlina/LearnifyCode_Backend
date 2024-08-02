@@ -1,6 +1,8 @@
 from flask import Flask
 from firebase_admin import credentials, firestore, initialize_app, _apps
 import os
+import base64
+import tempfile
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,16 +25,21 @@ def create_app(testing=False):
         os.environ.pop('FIRESTORE_EMULATOR_HOST', None)
         os.environ.pop('FIRESTORE_PROJECT_ID', None)
 
-    # Get the path to the Firebase credentials JSON file from environment variables
-    firebase_credentials_path = os.getenv('FIREBASE_CREDENTIALS_PATH')
+    # Get the base64-encoded Firebase credentials from environment variables
+    firebase_credentials_base64 = os.getenv('FIREBASE_CREDENTIALS_BASE64')
 
-    if not firebase_credentials_path:
+    if not firebase_credentials_base64:
         raise ValueError(
-            "The path to the Firebase credentials JSON file cannot be accessed.")
+            "The base64-encoded Firebase credentials JSON is missing from environment variables.")
+
+    # Decode the base64-encoded Firebase credentials and write them to a temporary file
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.json') as temp_file:
+        temp_file.write(base64.b64decode(firebase_credentials_base64))
+        temp_file_path = temp_file.name
 
     # Initialize Firebase Admin SDK only if not already initialized
     if not _apps:
-        cred = credentials.Certificate(firebase_credentials_path)
+        cred = credentials.Certificate(temp_file_path)
         initialize_app(cred, {'projectId': firestore_project_id})
 
     app.db = firestore.client()
