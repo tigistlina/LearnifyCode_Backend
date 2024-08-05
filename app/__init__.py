@@ -1,5 +1,5 @@
 from flask import Flask
-from firebase_admin import credentials, firestore, initialize_app, _apps
+from firebase_admin import credentials, firestore, initialize_app, _apps, auth
 import os
 import base64
 import tempfile
@@ -46,6 +46,9 @@ def create_app(testing=False):
 
     # Import and register blueprints
     from .routes.lesson_routes import lesson_bp
+    from .routes.auth_routes import auth_bp
+
     app.register_blueprint(lesson_bp)
+    app.register_blueprint(auth_bp)
 
     return app
