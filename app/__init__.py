@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from firebase_admin import credentials, firestore, initialize_app, _apps, auth
 import os
 import base64
@@ -7,15 +8,28 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def create_app(testing=False):
     app = Flask(__name__)
+
+    # CORS configuration
+    cors = CORS(app, resources={
+        r"/*": {
+            "origins": ["http://localhost:4200"],
+            "allow_headers": ["accept", "accept-encoding", "authorization", "content-type", "dnt", "origin", "user-agent", "x-csrftoken", "x-requested-with"],
+            "expose_headers": ["Authorization"],
+            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            "supports_credentials": True
+        }
+    })
 
     # Get Firestore project ID from environment variable
     firestore_project_id = os.getenv('FIRESTORE_PROJECT_ID')
     firestore_emulator_host = os.getenv('FIRESTORE_EMULATOR_HOST')
 
     # Conditionally use Firestore emulator settings based on environment variable
-    use_emulator = os.getenv('USE_FIRESTORE_EMULATOR', 'false').lower() == 'true'
+    use_emulator = os.getenv('USE_FIRESTORE_EMULATOR',
+                             'false').lower() == 'true'
 
     if testing or use_emulator:
         os.environ['FIRESTORE_EMULATOR_HOST'] = firestore_emulator_host
