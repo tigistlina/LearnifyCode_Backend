@@ -10,7 +10,9 @@ def create_app(testing=False):
 
     # Get Firestore project ID from environment variable
     firestore_project_id = os.getenv('FIRESTORE_PROJECT_ID')
+    print(f"Firestore project ID: {firestore_project_id}")
     firestore_emulator_host = os.getenv('FIRESTORE_EMULATOR_HOST')
+    # print(f"Firestore emulator host: {firestore_emulator_host}")
 
     # Conditionally use Firestore emulator settings based on environment variable
     use_emulator = os.getenv('USE_FIRESTORE_EMULATOR', 'false').lower() == 'true'
@@ -19,9 +21,9 @@ def create_app(testing=False):
         os.environ['FIRESTORE_EMULATOR_HOST'] = firestore_emulator_host
         os.environ['FIRESTORE_PROJECT_ID'] = firestore_project_id
         app.config['TESTING'] = True
-    else:
-        os.environ.pop('FIRESTORE_EMULATOR_HOST', None)
-        os.environ.pop('FIRESTORE_PROJECT_ID', None)
+    # else:
+    #     os.environ.pop('FIRESTORE_EMULATOR_HOST', None)
+    #     os.environ.pop('FIRESTORE_PROJECT_ID', None)
 
     # Get the path to the Firebase credentials JSON file from environment variables
     firebase_credentials_path = os.getenv('FIREBASE_CREDENTIALS_PATH')
