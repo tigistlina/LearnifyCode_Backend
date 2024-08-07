@@ -38,7 +38,7 @@ def login(email, password):
     except Exception as e:
         print(f"Error logging in: {e}")
         return None
-    
+
 def verify_id_token(idToken):
     try:
         decoded_token = auth.verify_id_token(idToken, check_revoked=True)
@@ -53,15 +53,15 @@ def verify_id_token(idToken):
     except Exception as e:
         print(f"Error verifying token: {e}")
         return None
-    
+
 @auth_bp.route('/sign_up', methods=['POST'])
-def create_user_route():
+def sign_up():
     data = request.json
     email = data.get('email')
     password = data.get('password')
-    user_name = data.get('user_name')
+    name = data.get('name')
 
-    if not email or not password or not user_name:
+    if not email or not password or not name:
         return jsonify({'error': 'Email, password, and name are required.'}), 400
 
     try:
@@ -73,7 +73,7 @@ def create_user_route():
         user_ref = db.collection('users').document(user.uid)
         user_ref.set({
             'email': email,
-            'user_name': user_name,
+            'name': name,
             'uid': user.uid
         })
 
@@ -103,11 +103,11 @@ def verify_id_token_route():
         return jsonify({"uid": result['uid'], "status": "Token is valid"}), 200
     else:
         return jsonify({'error': "Token verification failed"}), 400
-    
 
-# app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(auth_bp, url_prefix='/auth')
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
