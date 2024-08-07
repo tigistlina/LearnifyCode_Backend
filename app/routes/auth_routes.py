@@ -81,6 +81,18 @@ def create_user_route():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@auth_bp.route('/login', methods=['POST'])
+def login_route():
+    data = request.json
+    email = data.get('email', '')
+    password = data.get('password', '')
+    token = login(email, password)
+    print(f"login: {token}")
+    if token:
+        return jsonify({'message': "User successfully logged in", 'idToken': token}), 200
+    else:
+        return jsonify({'message': "Error logging in"}), 400
+
     
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
