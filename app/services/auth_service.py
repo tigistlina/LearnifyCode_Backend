@@ -3,13 +3,14 @@ from firebase_admin import auth
 import requests 
 import os
 
-def create_user(email, password):
+def create_user(name, email, password):
     try:
         user = auth.create_user(
+            name=name,
             email=email, 
             password=password
             )
-        return {"uid": user.uid, "email": user.email}
+        return {"uid": user.uid, "name": user.name, "email": user.email}
     except Exception as e:
         print(f"Error creating user: {e}")
         return None
@@ -47,5 +48,6 @@ def verify_id_token(idToken):
     except Exception as e:
         print(f"Error verifying token: {e}")
         return None
-    
+
+
 

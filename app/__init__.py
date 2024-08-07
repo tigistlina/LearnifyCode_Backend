@@ -59,9 +59,10 @@ def create_app(testing=False):
 
     # Import and register blueprints
     from .routes.lesson_routes import lesson_bp
-    from .routes.auth_routes import auth_bp
-
     app.register_blueprint(lesson_bp)
-    app.register_blueprint(auth_bp)
+    
+    from .routes.auth_routes import auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+
 
     return app

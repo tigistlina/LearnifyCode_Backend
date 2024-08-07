@@ -58,5 +58,6 @@ def verify_id_token():
     uid = decoded_token['uid']
     print(f"decoded token {decoded_token}")
     return jsonify({"uid": uid, "status": "Token is valid"}), 200
-    
+
+
 
