@@ -1,63 +1,32 @@
-import firebase_admin 
+import firebase_admin
 from firebase_admin import auth, firestore
-from flask import Blueprint, request, jsonify
-from app.services.auth_service import login, create_user
+import requests
+import os
+from flask import Flask, Blueprint, request, jsonify
 
-auth_bp = Blueprint('auth', __name__)  
-auth=firebase_admin.auth 
+app = Flask(__name__)
 
-@auth_bp.route('/sign_up', methods=['POST'])    
-def create_user():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-    user_name = data.get('user_name')
+# Initialize Firebase Admin SDK if not already initialized
+if not firebase_admin._apps:
+    firebase_admin.initialize_app()
 
-    if not email or not password or not user_name:
-        return jsonify({'error': 'Email, password, and name are required.'}), 400
+auth_bp = Blueprint('auth', __name__)
 
+def create_user(name, email, password):
     try:
-        # Create user with Firebase Authentication
-        user = auth.create_user(email=email, password=password)
-
-        # Store additional user details in Firestore
-        db = firestore.client()
-        user_ref = db.collection('users').document(user.uid)
-        user_ref.set({
-            'email': email,
-            'user_name': user_name,
-            'uid': user.uid
-        })
-
-        return jsonify({'message': 'User created successfully', 'user_id': user.uid}), 201
+        user = auth.create_user(
+            display_name=name,
+            email=email,
+            password=password
+        )
+        return {"uid": user.uid, "name": user.display_name, "email": user.email}
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Error creating user: {e}")
+        return None
 
+app.register_blueprint(auth_bp, url_prefix='/auth')
 
-
-@auth_bp.route('/login', methods=['POST'])
-def login_route():
-    auth = firebase_admin.auth
-    data = request.json
-    email = data.get('email', '')   
-    password = data.get('password', '')
-    user = login(email, password)
-    print(f"login: {user}")
-    # returns a dictionary with a key called 'idToken' which is the jwt token
-    if user:
-        return jsonify({'message': "User successfully logged in"}), 200
-    else:
-        return jsonify({'message': "Error logging in"}), 400
-
-@auth_bp.route('/verify_id_token', methods=['POST'])
-def verify_id_token():
-    data = request.json
-    idToken = data.get('idToken', '')
-    print(idToken)
-    decoded_token = auth.verify_id_token(idToken)
-    uid = decoded_token['uid']
-    print(f"decoded token {decoded_token}")
-    return jsonify({"uid": uid, "status": "Token is valid"}), 200
-
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
