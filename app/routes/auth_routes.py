@@ -93,6 +93,16 @@ def login_route():
     else:
         return jsonify({'message': "Error logging in"}), 400
 
+@auth_bp.route('/verify_id_token', methods=['POST'])
+def verify_id_token_route():
+    data = request.json
+    idToken = data.get('idToken', '')
+    print(idToken)
+    result = verify_id_token(idToken)
+    if result:
+        return jsonify({"uid": result['uid'], "status": "Token is valid"}), 200
+    else:
+        return jsonify({'error': "Token verification failed"}), 400
     
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
