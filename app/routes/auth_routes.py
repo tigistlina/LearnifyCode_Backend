@@ -55,7 +55,7 @@ def verify_id_token(idToken):
         return None
 
 @auth_bp.route('/sign_up', methods=['POST'])
-def sign_up():
+def signup():
     data = request.json
     email = data.get('email')
     password = data.get('password')
@@ -103,9 +103,3 @@ def verify_id_token_route():
         return jsonify({"uid": result['uid'], "status": "Token is valid"}), 200
     else:
         return jsonify({'error': "Token verification failed"}), 400
-
-
-
-
-
-
