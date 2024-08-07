@@ -24,12 +24,11 @@ def create_app(testing=False):
     })
 
     # Get Firestore project ID from environment variable
-    firestore_project_id = os.getenv('FIRESTORE_PROJECT_ID')
+    firestore_project_id = os.getenv('FIREBASE_PROJECT_ID')
     firestore_emulator_host = os.getenv('FIRESTORE_EMULATOR_HOST')
 
     # Conditionally use Firestore emulator settings based on environment variable
-    use_emulator = os.getenv('USE_FIRESTORE_EMULATOR',
-                             'false').lower() == 'true'
+    use_emulator = os.getenv('USE_FIRESTORE_EMULATOR','false').lower() == 'true'
 
     if testing or use_emulator:
         os.environ['FIRESTORE_EMULATOR_HOST'] = firestore_emulator_host
@@ -60,9 +59,10 @@ def create_app(testing=False):
 
     # Import and register blueprints
     from .routes.lesson_routes import lesson_bp
-    from .routes.auth_routes import auth_bp
-
     app.register_blueprint(lesson_bp)
-    app.register_blueprint(auth_bp)
+    
+    from .routes.auth_routes import auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+
 
     return app

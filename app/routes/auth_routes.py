@@ -1,11 +1,61 @@
-from flask import Blueprint, request, jsonify
 import firebase_admin
 from firebase_admin import auth, firestore
+import requests
+import os
+from flask import Flask, Blueprint, request, jsonify
 
-auth_bp = Blueprint('auth_bp', __name__)
+app = Flask(__name__)
 
-@auth_bp.route('/signup', methods=['POST'])
-def signup():
+# Initialize Firebase Admin SDK if not already initialized
+if not firebase_admin._apps:
+    firebase_admin.initialize_app()
+
+auth_bp = Blueprint('auth', __name__)
+
+def create_user(name, email, password):
+    try:
+        user = auth.create_user(
+            display_name=name,
+            email=email,
+            password=password
+        )
+        return {"uid": user.uid, "name": user.display_name, "email": user.email}
+    except Exception as e:
+        print(f"Error creating user: {e}")
+        return None
+
+def login(email, password):
+    try:
+        url = os.getenv('FIREBASE_WEB_API_KEY')
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+        response = requests.post(url, json=payload)
+        print(response.json())
+        return response.json().get("idToken")
+    except Exception as e:
+        print(f"Error logging in: {e}")
+        return None
+
+def verify_id_token(idToken):
+    try:
+        decoded_token = auth.verify_id_token(idToken, check_revoked=True)
+        uid = decoded_token['uid']
+        return {"uid": uid}
+    except auth.ExpiredIdTokenError:
+        print("Error verifying token: Expired ID token. Please re-enter your credentials.")
+        return None
+    except auth.InvalidIdTokenError:
+        print("Error verifying token: Invalid ID token")
+        return None
+    except Exception as e:
+        print(f"Error verifying token: {e}")
+        return None
+
+@auth_bp.route('/sign_up', methods=['POST'])
+def sign_up():
     data = request.json
     email = data.get('email')
     password = data.get('password')
@@ -31,29 +81,31 @@ def signup():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@auth_bp.route('/login', methods=['POST'])
+def login_route():
+    data = request.json
+    email = data.get('email', '')
+    password = data.get('password', '')
+    token = login(email, password)
+    print(f"login: {token}")
+    if token:
+        return jsonify({'message': "User successfully logged in", 'idToken': token}), 200
+    else:
+        return jsonify({'message': "Error logging in"}), 400
+
+@auth_bp.route('/verify_id_token', methods=['POST'])
+def verify_id_token_route():
+    data = request.json
+    idToken = data.get('idToken', '')
+    print(idToken)
+    result = verify_id_token(idToken)
+    if result:
+        return jsonify({"uid": result['uid'], "status": "Token is valid"}), 200
+    else:
+        return jsonify({'error': "Token verification failed"}), 400
 
 
-@auth_bp.route('/user-profile', methods=['GET'])
-def get_user_profile():
-    id_token = request.headers.get('Authorization')
 
-    if not id_token:
-        return jsonify({'error': 'ID token is required.'}), 401
 
-    try:
-        # Verify the ID token
-        decoded_token = auth.verify_id_token(id_token)
-        uid = decoded_token['uid']
 
-        # Retrieve user details from Firestore
-        db = firestore.client()
-        user_ref = db.collection('users').document(uid)
-        user_doc = user_ref.get()
 
-        if not user_doc.exists:
-            return jsonify({'error': 'User not found.'}), 404
-
-        user_data = user_doc.to_dict()
-        return jsonify(user_data), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
