@@ -24,6 +24,22 @@ def create_user(name, email, password):
         print(f"Error creating user: {e}")
         return None
 
+def login(email, password):
+    try:
+        url = os.getenv('FIREBASE_WEB_API_KEY')
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+        response = requests.post(url, json=payload)
+        print(response.json())
+        return response.json().get("idToken")
+    except Exception as e:
+        print(f"Error logging in: {e}")
+        return None
+    
+
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
 if __name__ == '__main__':
