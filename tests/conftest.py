@@ -32,9 +32,8 @@ def setup_firestore_emulator(app):
         "lesson": [
             "Dynamic programming is a method used in computer science and mathematics to solve complex problems by breaking them down into smaller, more manageable subproblems. It involves solving each subproblem only once and storing the results, so that they can be reused in solving larger subproblems.",
             "",
-            "The key idea behind dynamic programming is to solve a problem by considering all possible choices at each decision point and making an optimal choice based on the results of the subproblems that have already been solved. This approach can lead to significant improvements in efficiency and can enable the solution of problems that would be impractical or impossible to solve using a brute-force approach.",
-            "",
-            "Dynamic programming is commonly used in a variety of applications such as optimization, scheduling, and sequence alignment. It is particularly well-suited for problems"
+            "The key idea behind dynamic programming is to solve a problem by considering all possible choices at each decision point and making an optimal choice based on the results of the subproblems that have already been solved. This approach can lead to significant improvements in efficiency and can enable the solution of problems that would be impractical or impossible to solve using a brute-force approach."
+            ""
         ]
     }
 
