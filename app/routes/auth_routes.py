@@ -54,7 +54,7 @@ def verify_id_token(idToken):
         print(f"Error verifying token: {e}")
         return None
 
-@auth_bp.route('/sign_up', methods=['POST'])
+@auth_bp.route('/signup', methods=['POST'])
 def signup():
     data = request.json
     email = data.get('email')
