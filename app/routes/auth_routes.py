@@ -54,6 +54,34 @@ def verify_id_token(idToken):
         print(f"Error verifying token: {e}")
         return None
     
+@auth_bp.route('/sign_up', methods=['POST'])
+def create_user_route():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+    user_name = data.get('user_name')
+
+    if not email or not password or not user_name:
+        return jsonify({'error': 'Email, password, and name are required.'}), 400
+
+    try:
+        # Create user with Firebase Authentication
+        user = auth.create_user(email=email, password=password)
+
+        # Store additional user details in Firestore
+        db = firestore.client()
+        user_ref = db.collection('users').document(user.uid)
+        user_ref.set({
+            'email': email,
+            'user_name': user_name,
+            'uid': user.uid
+        })
+
+        return jsonify({'message': 'User created successfully', 'user_id': user.uid}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
