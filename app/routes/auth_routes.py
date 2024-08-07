@@ -104,10 +104,8 @@ def verify_id_token_route():
     else:
         return jsonify({'error': "Token verification failed"}), 400
 
-app.register_blueprint(auth_bp, url_prefix='/auth')
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
 
 
 
