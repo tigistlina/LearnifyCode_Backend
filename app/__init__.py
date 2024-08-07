@@ -15,7 +15,7 @@ def create_app(testing=False):
     # CORS configuration
     cors = CORS(app, resources={
         r"/*": {
-            "origins": ["http://localhost:4200"],
+            "origins": ["http://localhost:4200","https://learnify-frontend.netlify.app"],
             "allow_headers": ["accept", "accept-encoding", "authorization", "content-type", "dnt", "origin", "user-agent", "x-csrftoken", "x-requested-with"],
             "expose_headers": ["Authorization"],
             "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
