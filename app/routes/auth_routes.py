@@ -39,6 +39,21 @@ def login(email, password):
         print(f"Error logging in: {e}")
         return None
     
+def verify_id_token(idToken):
+    try:
+        decoded_token = auth.verify_id_token(idToken, check_revoked=True)
+        uid = decoded_token['uid']
+        return {"uid": uid}
+    except auth.ExpiredIdTokenError:
+        print("Error verifying token: Expired ID token. Please re-enter your credentials.")
+        return None
+    except auth.InvalidIdTokenError:
+        print("Error verifying token: Invalid ID token")
+        return None
+    except Exception as e:
+        print(f"Error verifying token: {e}")
+        return None
+    
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
