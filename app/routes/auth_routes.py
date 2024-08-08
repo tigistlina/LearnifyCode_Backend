@@ -18,9 +18,11 @@ def create_user(name, email, password, avatar_url):
             name=name,
             email=email,
             password=password,
-            avatar_url=avatar_url
+            photo_url=avatar_url
+
         )
-        return {"uid": user.uid, "name": user.name, "email": user.email, "avatar_url": user.avatar_url}
+        
+        return {"uid": user.uid, "name": user.name, "email": user.email, "avatar_url": user.photo_url}
     except Exception as e:
         print(f"Error creating user: {e}")
         return None
@@ -55,13 +57,13 @@ def verify_id_token(idToken):
         print(f"Error verifying token: {e}")
         return None
 
-@auth_bp.route('/sign_up', methods=['POST'])
-def sign_up():
+@auth_bp.route('/signup', methods=['POST'])
+def signup():
     data = request.json
     email = data.get('email')
     password = data.get('password')
     name = data.get('name')
-    avatar_url = data.get('avatar_url')
+    photo_url = data.get('avatar_url')
 
     if not email or not password or not name:
         return jsonify({'error': 'Email, password, and name are required.'}), 400
@@ -105,11 +107,3 @@ def verify_id_token_route():
         return jsonify({"uid": result['uid'], "status": "Token is valid"}), 200
     else:
         return jsonify({'error': "Token verification failed"}), 400
-    
-
-
-
-
-
-
-

@@ -15,7 +15,7 @@ def create_app(testing=False):
     # CORS configuration
     cors = CORS(app, resources={
         r"/*": {
-            "origins": ["http://localhost:4200"],
+            "origins": ["http://localhost:4200","https://learnify-frontend.netlify.app"],
             "allow_headers": ["accept", "accept-encoding", "authorization", "content-type", "dnt", "origin", "user-agent", "x-csrftoken", "x-requested-with"],
             "expose_headers": ["Authorization"],
             "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -60,9 +60,8 @@ def create_app(testing=False):
     # Import and register blueprints
     from .routes.lesson_routes import lesson_bp
     app.register_blueprint(lesson_bp)
-    
+
     from .routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
-
 
     return app
