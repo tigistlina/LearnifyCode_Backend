@@ -12,14 +12,17 @@ if not firebase_admin._apps:
 
 auth_bp = Blueprint('auth', __name__)
 
-def create_user(name, email, password):
+def create_user(name, email, password, avatar_url):
     try:
         user = auth.create_user(
-            display_name=name,
+            name=name,
             email=email,
-            password=password
+            password=password,
+            photo_url=avatar_url
+
         )
-        return {"uid": user.uid, "name": user.display_name, "email": user.email}
+        
+        return {"uid": user.uid, "name": user.name, "email": user.email, "avatar_url": user.photo_url}
     except Exception as e:
         print(f"Error creating user: {e}")
         return None
@@ -60,6 +63,7 @@ def signup():
     email = data.get('email')
     password = data.get('password')
     name = data.get('name')
+    photo_url = data.get('avatar_url')
 
     if not email or not password or not name:
         return jsonify({'error': 'Email, password, and name are required.'}), 400
