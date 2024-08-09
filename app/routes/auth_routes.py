@@ -19,7 +19,6 @@ def create_user(name, email, password, avatar_url):
             email=email,
             password=password,
             photo_url=avatar_url
-
         )
         
         return {"uid": user.uid, "name": user.name, "email": user.email, "avatar_url": user.photo_url}
@@ -71,7 +70,6 @@ def signup():
     try:
         # Create user with Firebase Authentication
         user = auth.create_user(email=email, password=password)
-
         # Store additional user details in Firestore
         db = firestore.client()
         user_ref = db.collection('users').document(user.uid)
