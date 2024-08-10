@@ -21,7 +21,7 @@ def create_user(name, email, password, avatar_url):
             photo_url=avatar_url
 
         )
-        
+
         return {"uid": user.uid, "name": user.name, "email": user.email, "avatar_url": user.photo_url}
     except Exception as e:
         print(f"Error creating user: {e}")
@@ -37,7 +37,7 @@ def login(email, password):
         }
         response = requests.post(url, json=payload)
         print(response.json())
-        return response.json().get("idToken")
+        return response.json()
     except Exception as e:
         print(f"Error logging in: {e}")
         return None
@@ -63,7 +63,7 @@ def signup():
     email = data.get('email')
     password = data.get('password')
     name = data.get('name')
-    photo_url = data.get('avatar_url')
+    avatar_url = data.get('avatar_url')
 
     if not email or not password or not name:
         return jsonify({'error': 'Email, password, and name are required.'}), 400
@@ -78,7 +78,8 @@ def signup():
         user_ref.set({
             'email': email,
             'name': name,
-            'uid': user.uid
+            'uid': user.uid,
+            'avatar_url': avatar_url
         })
 
         return jsonify({'message': 'User created successfully', 'user_id': user.uid}), 201
@@ -90,12 +91,31 @@ def login_route():
     data = request.json
     email = data.get('email', '')
     password = data.get('password', '')
-    token = login(email, password)
-    print(f"login: {token}")
-    if token:
-        return jsonify({'message': "User successfully logged in", 'idToken': token}), 200
+    login_response = login(email, password)
+    print(f"login: {login_response}")
+    if login_response and 'idToken' in login_response:
+        id_token = login_response['idToken']
+        decoded_token = auth.verify_id_token(id_token)
+        uid = decoded_token['uid']
+
+        # Fetch user details from Firestore
+        db = firestore.client()
+        user_ref = db.collection('users').document(uid)
+        user_doc = user_ref.get()
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            return jsonify({
+                'message': "User successfully logged in",
+                'idToken': id_token,
+                'name': user_data.get('name'),
+                'avatar_url': user_data.get('avatar_url')
+            }), 200
+        else:
+            return jsonify({'message': "User data not found"}), 400
     else:
         return jsonify({'message': "Error logging in"}), 400
+
+
 
 @auth_bp.route('/verify_id_token', methods=['POST'])
 def verify_id_token_route():
