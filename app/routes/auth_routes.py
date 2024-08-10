@@ -6,6 +6,12 @@ from flask import Flask, Blueprint, request, jsonify
 
 app = Flask(__name__)
 
+FIRESTORE_EMULATOR_HOST = os.getenv('FIRESTORE_EMULATOR_HOST')
+db = firestore.client()
+if FIRESTORE_EMULATOR_HOST:
+    db._firestore_api._transport.host = FIRESTORE_EMULATOR_HOST
+
+
 # Initialize Firebase Admin SDK if not already initialized
 if not firebase_admin._apps:
     firebase_admin.initialize_app()
@@ -65,17 +71,24 @@ def signup():
     photo_url = data.get('avatar_url')
 
     if not email or not password or not name:
-        return jsonify({'error': 'Email, password, and name are required.'}), 400
+        return jsonify({'error': 'Email, password, name and avatar are required.'}), 400
 
     try:
         # Create user with Firebase Authentication
-        user = auth.create_user(email=email, password=password)
+        user = auth.create_user(
+            email=email,
+            password=password,
+            display_name=name,
+            photo_url=photo_url
+        )
+        
         # Store additional user details in Firestore
         db = firestore.client()
         user_ref = db.collection('users').document(user.uid)
         user_ref.set({
             'email': email,
             'name': name,
+            'avatar_url': photo_url,
             'uid': user.uid
         })
 
@@ -91,9 +104,27 @@ def login_route():
     token = login(email, password)
     print(f"login: {token}")
     if token:
-        return jsonify({'message': "User successfully logged in", 'idToken': token}), 200
+        try:
+            # Fetch user details from Firestore
+            user = auth.get_user_by_email(email)
+            user_ref = db.collection('users').document(user.uid)
+            user_data = user_ref.get().to_dict()
+            if user_data:
+                return jsonify({
+                    'message': "User successfully logged in",
+                    'idToken': token,
+                    'name': user_data.get('name'),
+                    'avatar_url': user_data.get('avatar_url')
+                }), 200
+            else:
+                return jsonify({'message': "User data not found"}), 404
+        except Exception as e:
+            return jsonify({'message': f"Error fetching user data: {str(e)}"}), 500
     else:
         return jsonify({'message': "Error logging in"}), 400
+    #     return jsonify({'message': "User successfully logged in", 'idToken': token}), 200
+    # else:
+    #     return jsonify({'message': "Error logging in"}), 400
 
 @auth_bp.route('/verify_id_token', methods=['POST'])
 def verify_id_token_route():
